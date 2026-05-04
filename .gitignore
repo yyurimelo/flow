@@ -1,0 +1,14 @@
+node_modules/
+**/node_modules/
+.vscode/
+**/.vscode/
+
+# Keep environment variables out of version control
+.env
+
+generated/
+**/generated/
+
+# Lock files
+package-lock.json
+**/package-lock.json
