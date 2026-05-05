@@ -6,4 +6,4 @@ export const API_ENDPOINTS = {
     GET: (id: string) => `/api/user/${id}`,
     DELETE: (id: string) => `/api/user/${id}`,
   }
-}
+} as const;

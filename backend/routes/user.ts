@@ -1,32 +1,32 @@
 import express from "express";
-import bcrypt from "bcrypt"
-import { PrismaClient } from "../generated/prisma/client.ts"
+import { UserService } from "../services/user.service";
+import { AppError } from "@flow/exceptions";
 
-const prisma = new PrismaClient()
-const router = express.Router()
+const router = express.Router();
+const userService = new UserService();
 
 router.post("/", async (req, res) => {
-
   try {
-    const user = req.body
-
-    const salt = await bcrypt.genSalt(6)
-    const hasPassword = await bcrypt.hash(user.password, salt)
-
-    const response = await prisma.user.create({
-      data: {
-        name: user.name,
-        email: user.email,
-        password: hasPassword,
-      }
-    })
-
-    res.status(201).json(response)
+    const user = await userService.create(req.body);
+    res.status(201).json(user);
   } catch (err) {
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).json({
+        error: err.message,
+        code: err.code,
+      });
+    }
 
+    if (err instanceof Error && err.name === "ZodError") {
+      return res.status(400).json({
+        error: "Validation error",
+        details: (err as any).errors,
+      });
+    }
+    res.status(500).json({
+      error: "Internal server error",
+    });
   }
+});
 
-
-})
-
-export default router
+export default router;

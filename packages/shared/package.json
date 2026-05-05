@@ -7,9 +7,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./constants": "./src/constants.ts",
-    "./types": "./src/types.ts",
-    "./utils": "./src/utils.ts",
-    "./enums": "./src/enums.ts"
+    "./user": "./src/user/index.ts",
+    "./user/types": "./src/user/types.ts",
+    "./user/schemas": "./src/user/schemas.ts",
+    "./types": "./src/user/types.ts",
+    "./enums": "./src/user/types.ts",
+    "./schemas": "./src/user/schemas.ts"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

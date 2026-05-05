@@ -1,23 +1,30 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "types": ["node"],
+    "target": "es2022",
+    "lib": [
+      "ES2022"
+    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "strict": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@flow/*": [
+        "./*"
+      ]
+    }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
