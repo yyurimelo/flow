@@ -17,8 +17,6 @@ export class UserService {
       where: { email: validatedData.email },
     });
 
-    console.log("entrou aqui")
-
     if (existingUser) {
       throw UserException.EmailInUse();
     }
