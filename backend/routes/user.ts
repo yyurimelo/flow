@@ -13,6 +13,7 @@ router.post("/", async (req, res) => {
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({
         error: err.message,
+        statusCode: err.statusCode,
         code: err.code,
       });
     }
