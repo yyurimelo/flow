@@ -1,5 +1,5 @@
 import { UserException } from "@flow/exceptions";
-import { prisma } from "@flow/prisma";
+import { UserRepository } from "@flow/repositories/user.repository";
 import {
   createUserSchema,
   getUsersPaginatedSchema,
@@ -11,14 +11,12 @@ import {
   type UpdateUserRequest,
   type UserResponse,
 } from "@flow/shared";
-import type { Prisma, Role, User } from "@prisma/client";
+import type { Role, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const activeUserWhere: Prisma.UserWhereInput = {
-  OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
-};
-
 export class UserService {
+  constructor(private readonly userRepository = new UserRepository()) {}
+
   async create(data: CreateUserRequest): Promise<UserResponse> {
     const result = createUserSchema.safeParse(data);
 
@@ -28,9 +26,9 @@ export class UserService {
 
     const validatedData = result.data;
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-    });
+    const existingUser = await this.userRepository.findByEmail(
+      validatedData.email
+    );
 
     if (existingUser && !existingUser.deletedAt) {
       throw UserException.EmailInUse();
@@ -39,25 +37,20 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
     if (existingUser && existingUser.deletedAt) {
-      const restoredUser = await prisma.user.update({
-        where: { id: existingUser.id },
-        data: {
-          name: validatedData.name,
-          password: hashedPassword,
-          deletedAt: null,
-          restoredAt: new Date(),
-        },
+      const restoredUser = await this.userRepository.update(existingUser.id, {
+        name: validatedData.name,
+        password: hashedPassword,
+        deletedAt: null,
+        restoredAt: new Date(),
       });
 
       return this.toUserResponse(restoredUser);
     }
 
-    const user = await prisma.user.create({
-      data: {
-        name: validatedData.name,
-        email: validatedData.email,
-        password: hashedPassword,
-      },
+    const user = await this.userRepository.create({
+      name: validatedData.name,
+      email: validatedData.email,
+      password: hashedPassword,
     });
 
     return this.toUserResponse(user);
@@ -72,9 +65,7 @@ export class UserService {
     }
 
     const validatedData = result.data;
-    const existingUser = await prisma.user.findUnique({
-      where: { id: validatedId },
-    });
+    const existingUser = await this.userRepository.findById(validatedId);
 
     if (!existingUser) {
       throw UserException.UserNotFound();
@@ -85,9 +76,9 @@ export class UserService {
     }
 
     if (validatedData.email && validatedData.email !== existingUser.email) {
-      const userWithEmail = await prisma.user.findUnique({
-        where: { email: validatedData.email },
-      });
+      const userWithEmail = await this.userRepository.findByEmail(
+        validatedData.email
+      );
 
       if (userWithEmail) {
         throw UserException.EmailInUse();
@@ -118,19 +109,14 @@ export class UserService {
       updateData.role = validatedData.role;
     }
 
-    const user = await prisma.user.update({
-      where: { id: validatedId },
-      data: updateData,
-    });
+    const user = await this.userRepository.update(validatedId, updateData);
 
     return this.toUserResponse(user);
   }
 
   async delete(id: string): Promise<void> {
     const validatedId = this.validateId(id);
-    const existingUser = await prisma.user.findUnique({
-      where: { id: validatedId },
-    });
+    const existingUser = await this.userRepository.findById(validatedId);
 
     if (!existingUser) {
       throw UserException.UserNotFound();
@@ -140,28 +126,20 @@ export class UserService {
       throw UserException.UserAlreadyDeleted();
     }
 
-    await prisma.user.update({
-      where: { id: validatedId },
-      data: { deletedAt: new Date() },
-    });
+    await this.userRepository.softDelete(validatedId);
   }
 
   async getAll(): Promise<UserResponse[]> {
-    const users = await prisma.user.findMany({
-      where: activeUserWhere,
-      orderBy: { createdAt: "desc" },
-    });
+    const users = await this.userRepository.findAllActive();
 
     return users.map((user) => this.toUserResponse(user));
   }
 
   async getById(id: string): Promise<UserResponse> {
     const validatedId = this.validateId(id);
-    const user = await prisma.user.findUnique({
-      where: { id: validatedId },
-    });
+    const user = await this.userRepository.findActiveById(validatedId);
 
-    if (!user || user.deletedAt) {
+    if (!user) {
       throw UserException.UserNotFound();
     }
 
@@ -181,15 +159,8 @@ export class UserService {
     const skip = (page - 1) * limit;
 
     const [total, users] = await Promise.all([
-      prisma.user.count({
-        where: activeUserWhere,
-      }),
-      prisma.user.findMany({
-        where: activeUserWhere,
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-      }),
+      this.userRepository.countActive(),
+      this.userRepository.findAllActivePaginated(skip, limit),
     ]);
 
     return {

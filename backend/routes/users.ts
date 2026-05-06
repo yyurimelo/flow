@@ -7,8 +7,8 @@ const userService = new UserService();
 
 router.post("/", async (req, res) => {
   try {
-    const user = await userService.create(req.body);
-    res.status(201).json(user);
+    const response = await userService.create(req.body);
+    res.status(201).json(response);
   } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({
@@ -34,8 +34,8 @@ router.post("/", async (req, res) => {
 
 router.get("/paginated", async (req, res) => {
   try {
-    const users = await userService.getAllPaginated(req.query);
-    res.status(200).json(users);
+    const response = await userService.getAllPaginated(req.query);
+    res.status(200).json(response);
   } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({
@@ -61,8 +61,8 @@ router.get("/paginated", async (req, res) => {
 
 router.get("/", async (_req, res) => {
   try {
-    const users = await userService.getAll();
-    res.status(200).json(users);
+    const response = await userService.getAll();
+    res.status(200).json(response);
   } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({
@@ -88,8 +88,8 @@ router.get("/", async (_req, res) => {
 
 router.get<{ id: string }>("/:id", async (req, res) => {
   try {
-    const user = await userService.getById(req.params.id);
-    res.status(200).json(user);
+    const response = await userService.getById(req.params.id);
+    res.status(200).json(response);
   } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({
@@ -115,8 +115,8 @@ router.get<{ id: string }>("/:id", async (req, res) => {
 
 router.put<{ id: string }>("/:id", async (req, res) => {
   try {
-    const user = await userService.update(req.params.id, req.body);
-    res.status(200).json(user);
+    const response = await userService.update(req.params.id, req.body);
+    res.status(200).json(response);
   } catch (err) {
     if (err instanceof AppError) {
       return res.status(err.statusCode).json({
