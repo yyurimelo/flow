@@ -11,7 +11,7 @@ export class AuthService {
     private readonly tokenService = new TokenService()
   ) {}
 
-  async auth(data: AuthRequest): Promise<AuthResponse> {
+  async signIn(data: AuthRequest): Promise<AuthResponse> {
     const result = authSchema.safeParse(data);
 
     if (!result.success) {
