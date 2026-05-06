@@ -17,7 +17,7 @@ import bcrypt from "bcrypt";
 export class UserService {
   constructor(private readonly userRepository = new UserRepository()) {}
 
-  async signIn(data: CreateUserRequest): Promise<UserResponse> {
+  async create(data: CreateUserRequest): Promise<UserResponse> {
     const result = createUserSchema.safeParse(data);
 
     if (!result.success) {
