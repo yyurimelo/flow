@@ -16,3 +16,13 @@ export type User = {
 };
 
 export type UserResponse = User;
+
+export type PaginatedUsersResponse = {
+  data: UserResponse[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
