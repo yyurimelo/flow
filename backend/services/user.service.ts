@@ -15,7 +15,7 @@ import type { Role, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 export class UserService {
-  constructor(private readonly userRepository = new UserRepository()) { }
+  constructor(private readonly userRepository = new UserRepository()) {}
 
   async signIn(data: CreateUserRequest): Promise<UserResponse> {
     const result = createUserSchema.safeParse(data);
@@ -26,7 +26,7 @@ export class UserService {
 
     const validatedData = result.data;
 
-    const existingUser = await this.userRepository.findByEmail(
+    const existingUser = await this.userRepository.findByEmailIncludingDeleted(
       validatedData.email
     );
 
@@ -65,7 +65,9 @@ export class UserService {
     }
 
     const validatedData = result.data;
-    const existingUser = await this.userRepository.findById(validatedId);
+    const existingUser = await this.userRepository.findByIdIncludingDeleted(
+      validatedId
+    );
 
     if (!existingUser) {
       throw UserException.UserNotFound();
@@ -76,9 +78,10 @@ export class UserService {
     }
 
     if (validatedData.email && validatedData.email !== existingUser.email) {
-      const userWithEmail = await this.userRepository.findByEmail(
-        validatedData.email
-      );
+      const userWithEmail =
+        await this.userRepository.findByEmailIncludingDeleted(
+          validatedData.email
+        );
 
       if (userWithEmail) {
         throw UserException.EmailInUse();
@@ -116,7 +119,9 @@ export class UserService {
 
   async delete(id: string): Promise<void> {
     const validatedId = this.validateId(id);
-    const existingUser = await this.userRepository.findById(validatedId);
+    const existingUser = await this.userRepository.findByIdIncludingDeleted(
+      validatedId
+    );
 
     if (!existingUser) {
       throw UserException.UserNotFound();
@@ -130,14 +135,14 @@ export class UserService {
   }
 
   async getAll(): Promise<UserResponse[]> {
-    const users = await this.userRepository.findAllActive();
+    const users = await this.userRepository.findAll();
 
     return users.map((user) => this.toUserResponse(user));
   }
 
   async getById(id: string): Promise<UserResponse> {
     const validatedId = this.validateId(id);
-    const user = await this.userRepository.findActiveById(validatedId);
+    const user = await this.userRepository.findById(validatedId);
 
     if (!user) {
       throw UserException.UserNotFound();
@@ -159,8 +164,8 @@ export class UserService {
     const skip = (page - 1) * limit;
 
     const [total, users] = await Promise.all([
-      this.userRepository.countActive(),
-      this.userRepository.findAllActivePaginated(skip, limit),
+      this.userRepository.count(),
+      this.userRepository.findAllPaginated(skip, limit),
     ]);
 
     return {

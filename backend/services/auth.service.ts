@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private readonly userRepository = new UserRepository(),
     private readonly tokenService = new TokenService()
-  ) { }
+  ) {}
 
   async auth(data: AuthRequest): Promise<AuthResponse> {
     const result = authSchema.safeParse(data);
@@ -20,7 +20,7 @@ export class AuthService {
 
     const validatedData = result.data;
 
-    const existingUser = await this.userRepository.findActiveByEmail(
+    const existingUser = await this.userRepository.findByEmail(
       validatedData.email
     );
 

@@ -1,54 +1,60 @@
 import { prisma } from "@flow/prisma";
 import type { Prisma } from "@prisma/client";
 
-const activeUserWhere: Prisma.UserWhereInput = {
+const notDeletedUserWhere: Prisma.UserWhereInput = {
   OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
 };
 
 export class UserRepository {
-  findByEmail(email: string) {
+  findByEmailIncludingDeleted(email: string) {
     return prisma.user.findUnique({
       where: { email },
     });
   }
 
-  findById(id: string) {
+  findByIdIncludingDeleted(id: string) {
     return prisma.user.findUnique({
       where: { id },
     });
   }
 
-  findActiveByEmail(email: string) {
+  findByEmail(email: string) {
     return prisma.user.findFirst({
-      where: { email, ...activeUserWhere },
+      where: {
+        email,
+        ...notDeletedUserWhere,
+      },
     });
   }
 
-  findActiveById(id: string) {
+  findById(id: string) {
     return prisma.user.findFirst({
-      where: { id, ...activeUserWhere },
+      where: {
+        id,
+        ...notDeletedUserWhere,
+      },
     });
   }
 
-  findAllActive() {
+  findAll() {
     return prisma.user.findMany({
-      where: activeUserWhere,
+      where: notDeletedUserWhere,
       orderBy: { createdAt: "desc" },
     });
   }
 
-  findAllActivePaginated(skip: number, take: number) {
+  findAllPaginated(skip: number, take: number) {
     return prisma.user.findMany({
-      where: activeUserWhere,
+      where: notDeletedUserWhere,
       skip,
       take,
       orderBy: { createdAt: "desc" },
     });
   }
 
-  countActive() {
+  count() {
     return prisma.user.count({
-      where: activeUserWhere,
+      where: notDeletedUserWhere,
     });
   }
 
