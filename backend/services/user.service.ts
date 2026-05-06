@@ -15,9 +15,9 @@ import type { Role, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 export class UserService {
-  constructor(private readonly userRepository = new UserRepository()) {}
+  constructor(private readonly userRepository = new UserRepository()) { }
 
-  async create(data: CreateUserRequest): Promise<UserResponse> {
+  async signIn(data: CreateUserRequest): Promise<UserResponse> {
     const result = createUserSchema.safeParse(data);
 
     if (!result.success) {

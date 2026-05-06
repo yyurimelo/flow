@@ -7,7 +7,7 @@ const userService = new UserService();
 
 router.post("/", async (req, res) => {
   try {
-    const response = await userService.create(req.body);
+    const response = await userService.signIn(req.body);
     res.status(201).json(response);
   } catch (err) {
     if (err instanceof AppError) {
