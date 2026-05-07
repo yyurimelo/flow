@@ -23,4 +23,12 @@ export class AuthException {
 
   static Unauthorized = () =>
     new AppError("Unauthorized access", 401, "UNAUTHORIZED");
+
+  static Forbidden = () =>
+    new AppError(
+      "You do not have permission to access this resource",
+      403,
+      "FORBIDDEN"
+    );
+
 }

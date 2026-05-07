@@ -1,4 +1,4 @@
-import { UserException } from "@flow/exceptions";
+import { UserException, AuthException } from "@flow/exceptions";
 import { UserRepository } from "@flow/repositories/user.repository";
 import {
   createUserSchema,
@@ -15,7 +15,7 @@ import type { Role, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 export class UserService {
-  constructor(private readonly userRepository = new UserRepository()) {}
+  constructor(private readonly userRepository = new UserRepository()) { }
 
   async create(data: CreateUserRequest): Promise<UserResponse> {
     const result = createUserSchema.safeParse(data);
@@ -56,8 +56,13 @@ export class UserService {
     return this.toUserResponse(user);
   }
 
-  async update(id: string, data: UpdateUserRequest): Promise<UserResponse> {
+  async update(
+    id: string,
+    userId: string,
+    data: UpdateUserRequest
+  ): Promise<UserResponse> {
     const validatedId = this.validateId(id);
+    const validatedUserId = this.validateId(userId);
     const result = updateUserSchema.safeParse(data);
 
     if (!result.success) {
@@ -65,6 +70,22 @@ export class UserService {
     }
 
     const validatedData = result.data;
+    const requester = await this.userRepository.findById(validatedUserId);
+
+    if (!requester) {
+      throw AuthException.Unauthorized();
+    }
+
+    const isAdmin = requester.role === "ADMIN";
+
+    if (!isAdmin && validatedId !== validatedUserId) {
+      throw AuthException.Forbidden();
+    }
+
+    if (!isAdmin && validatedData.role !== undefined) {
+      throw UserException.UserRoleUpdateForbidden();
+    }
+
     const existingUser = await this.userRepository.findByIdIncludingDeleted(
       validatedId
     );
@@ -77,35 +98,13 @@ export class UserService {
       throw UserException.UserAlreadyDeleted();
     }
 
-    if (validatedData.email && validatedData.email !== existingUser.email) {
-      const userWithEmail =
-        await this.userRepository.findByEmailIncludingDeleted(
-          validatedData.email
-        );
-
-      if (userWithEmail) {
-        throw UserException.EmailInUse();
-      }
-    }
-
     const updateData: {
       name?: string;
-      email?: string;
-      password?: string;
       role?: Role;
     } = {};
 
     if (validatedData.name !== undefined) {
       updateData.name = validatedData.name;
-    }
-
-    if (validatedData.email !== undefined) {
-      updateData.email = validatedData.email;
-    }
-
-    if (validatedData.password !== undefined) {
-      const salt = await bcrypt.genSalt(6);
-      updateData.password = await bcrypt.hash(validatedData.password, salt);
     }
 
     if (validatedData.role !== undefined) {
@@ -117,8 +116,19 @@ export class UserService {
     return this.toUserResponse(user);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, userId: string): Promise<void> {
     const validatedId = this.validateId(id);
+    const validatedUserId = this.validateId(userId);
+    const requester = await this.userRepository.findById(validatedUserId);
+
+    if (!requester) {
+      throw AuthException.Unauthorized();
+    }
+
+    if (requester.role !== "ADMIN") {
+      throw AuthException.Forbidden();
+    }
+
     const existingUser = await this.userRepository.findByIdIncludingDeleted(
       validatedId
     );
@@ -152,8 +162,15 @@ export class UserService {
   }
 
   async getAllPaginated(
-    params: GetUsersPaginatedRequest
+    params: GetUsersPaginatedRequest,
+    userId: string
   ): Promise<PaginatedUsersResponse> {
+    const user = await this.userRepository.findById(userId);
+
+    if (user?.role !== "ADMIN") {
+      throw AuthException.Forbidden();
+    }
+
     const result = getUsersPaginatedSchema.safeParse(params);
 
     if (!result.success) {

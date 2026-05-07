@@ -7,11 +7,13 @@ export const createUserSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export const updateUserSchema = createUserSchema
-  .extend({
+export const updateUserSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
     role: z.enum([USER_ROLE.USER, USER_ROLE.ADMIN]),
   })
   .partial()
+  .strict()
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field is required",
   });

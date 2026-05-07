@@ -15,4 +15,11 @@ export class UserException {
 
   static ValidationError = (details: any) =>
     new AppError("Validation error", 400, "VALIDATION_ERROR", details);
+
+  static UserRoleUpdateForbidden = () =>
+    new AppError(
+      "Only users with ADMIN role can update user roles",
+      403,
+      "USER_ROLE_UPDATE_FORBIDDEN"
+    );
 }
