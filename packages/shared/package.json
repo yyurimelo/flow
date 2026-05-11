@@ -10,6 +10,9 @@
     "./user": "./src/user/index.ts",
     "./user/types": "./src/user/types.ts",
     "./user/schemas": "./src/user/schemas.ts",
+    "./notification": "./src/notification/index.ts",
+    "./notification/types": "./src/notification/types.ts",
+    "./notification/schemas": "./src/notification/schemas.ts",
     "./types": "./src/user/types.ts",
     "./enums": "./src/user/types.ts",
     "./schemas": "./src/user/schemas.ts"

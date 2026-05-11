@@ -52,6 +52,23 @@ export class UserRepository {
     });
   }
 
+  findManyByIds(ids: string[]) {
+    if (ids.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return prisma.user.findMany({
+      where: {
+        id: { in: ids },
+        ...notDeletedUserWhere,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  }
+
   count() {
     return prisma.user.count({
       where: notDeletedUserWhere,
