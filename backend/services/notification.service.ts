@@ -54,21 +54,14 @@ export class NotificationService {
       validatedData.destination === NOTIFICATION_DESTINATION.USER
         ? validatedData.receiverId!
         : null;
+    let receiver: Awaited<ReturnType<UserRepository["findById"]>> = null;
 
     if (receiverId === validatedRequesterId) {
       throw NotificationException.CannotSendNotificationToSelf();
     }
 
-    // if (
-    //   receiverId !== null &&
-    //   receiverId !== validatedRequesterId &&
-    //   requester.role !== "ADMIN"
-    // ) {
-    //   throw AuthException.Forbidden();
-    // }
-
     if (receiverId !== null) {
-      const receiver = await this.userRepository.findById(receiverId);
+      receiver = await this.userRepository.findById(receiverId);
 
       if (!receiver) {
         throw UserException.UserNotFound();
@@ -84,7 +77,15 @@ export class NotificationService {
       type: validatedData.type,
     });
 
-    return this.toNotificationResponse(notification);
+    const userNamesById = new Map<string, string | null>([
+      [requester.id, requester.name ?? null],
+    ]);
+
+    if (receiver) {
+      userNamesById.set(receiver.id, receiver.name ?? null);
+    }
+
+    return this.mapNotification(notification, userNamesById);
   }
 
   async getAllPaginated(
@@ -364,14 +365,21 @@ export class NotificationService {
   private async toNotificationResponse(
     notification: PrismaNotification
   ): Promise<NotificationResponse> {
-    const responses = await this.toNotificationResponses([notification]);
+    const userIds = [notification.senderId, notification.receiverId].filter(
+      (value): value is string => typeof value === "string"
+    );
+    const userNamesById = await this.getUserNamesById(userIds);
 
-    return responses[0]!;
+    return this.mapNotification(notification, userNamesById);
   }
 
   private async toNotificationResponses(
     notifications: PrismaNotification[]
   ): Promise<NotificationResponse[]> {
+    if (notifications.length === 0) {
+      return [];
+    }
+
     const userIds = Array.from(
       new Set(
         notifications.flatMap((notification) =>
@@ -382,12 +390,28 @@ export class NotificationService {
       )
     );
 
-    const users = await this.userRepository.findManyByIds(userIds);
-    const userNamesById = new Map(
-      users.map((user) => [user.id, user.name ?? null] as const)
-    );
+    const userNamesById = await this.getUserNamesById(userIds);
 
-    return notifications.map((notification) => ({
+    return notifications.map((notification) =>
+      this.mapNotification(notification, userNamesById)
+    );
+  }
+
+  private async getUserNamesById(ids: string[]) {
+    if (ids.length === 0) {
+      return new Map<string, string | null>();
+    }
+
+    const users = await this.userRepository.findManyByIds(ids);
+
+    return new Map(users.map((user) => [user.id, user.name ?? null] as const));
+  }
+
+  private mapNotification(
+    notification: PrismaNotification,
+    userNamesById: Map<string, string | null>
+  ): NotificationResponse {
+    return {
       id: notification.id,
       senderId: notification.senderId,
       senderName:
@@ -407,7 +431,7 @@ export class NotificationService {
       readAt: notification.readAt?.toISOString() ?? null,
       createdAt: notification.createdAt.toISOString(),
       updatedAt: notification.updatedAt?.toISOString() ?? null,
-    }));
+    };
   }
 
   private validateUserId(id: string) {

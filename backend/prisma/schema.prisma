@@ -45,7 +45,7 @@ model Notification {
   updatedAt   DateTime?               @updatedAt
 
   @@index([receiverId, createdAt])
-  @@index([receiverId, read])
+  @@index([receiverId, read, createdAt])
   @@index([senderId, createdAt])
   @@index([destination, createdAt])
 }
