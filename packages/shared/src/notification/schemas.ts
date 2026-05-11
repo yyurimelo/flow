@@ -6,6 +6,9 @@ import {
   NOTIFICATION_TYPE,
 } from "./types.ts";
 
+const nullToUndefined = (value: unknown) =>
+  value === null ? undefined : value;
+
 const notificationTypeSchema = z.enum([
   NOTIFICATION_TYPE.INFO,
   NOTIFICATION_TYPE.SUCCESS,
@@ -84,11 +87,17 @@ export const getNotificationsSchema = z.object({
 });
 
 export const getNotificationFiltersSchema = z.object({
-  userId: userIdSchema.optional(),
-  read: booleanQuerySchema.optional(),
-  type: notificationTypeSchema.optional(),
-  destination: notificationDestinationSchema.optional(),
-  scope: notificationScopeSchema.default(NOTIFICATION_SCOPE.ALL),
+  userId: z.preprocess(nullToUndefined, userIdSchema.optional()),
+  read: z.preprocess(nullToUndefined, booleanQuerySchema.optional()),
+  type: z.preprocess(nullToUndefined, notificationTypeSchema.optional()),
+  destination: z.preprocess(
+    nullToUndefined,
+    notificationDestinationSchema.optional()
+  ),
+  scope: z.preprocess(
+    nullToUndefined,
+    notificationScopeSchema.default(NOTIFICATION_SCOPE.ALL)
+  ),
 });
 
 export const updateNotificationReadStatusSchema = z.object({
