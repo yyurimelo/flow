@@ -1,4 +1,5 @@
 import { AuthException, NotificationException, UserException } from "@flow/exceptions";
+import { publish } from "@flow/infra/rabbitmq/publisher";
 import { NotificationRepository } from "@flow/repositories/notification.repository";
 import { UserRepository } from "@flow/repositories/user.repository";
 import {
@@ -27,7 +28,7 @@ export class NotificationService {
   constructor(
     private readonly notificationRepository = new NotificationRepository(),
     private readonly userRepository = new UserRepository()
-  ) {}
+  ) { }
 
   async create(
     data: CreateNotificationRequest,
@@ -84,6 +85,12 @@ export class NotificationService {
     if (receiver) {
       userNamesById.set(receiver.id, receiver.name ?? null);
     }
+
+    // Enviar notificação para fila do RabbitMQ
+    await publish(
+      "notification.created",
+      this.mapNotification(notification, userNamesById)
+    );
 
     return this.mapNotification(notification, userNamesById);
   }
@@ -207,6 +214,10 @@ export class NotificationService {
       validatedRequesterId,
       requester.role
     );
+
+    if (notification.destination === NOTIFICATION_DESTINATION.SYSTEM) {
+      throw NotificationException.CannotChangeReadStatusOfSystemNotification();
+    }
 
     const updatedNotification = await this.notificationRepository.update(
       notification.id,

@@ -20,4 +20,11 @@ export class NotificationException {
 
   static ValidationError = (details: any) =>
     new AppError("Validation error", 400, "VALIDATION_ERROR", details);
+
+  static CannotChangeReadStatusOfSystemNotification = () =>
+    new AppError(
+      "Cannot change read status of system notifications",
+      403,
+      "CANNOT_CHANGE_READ_STATUS_OF_SYSTEM_NOTIFICATION"
+    );
 }
