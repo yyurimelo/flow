@@ -106,7 +106,7 @@ JWT_SECRET="qualquer-string-longa-e-aleatoria"
 | **Worker no host** (`npm run dev:worker`) | mesmo `env.ts` (importado via `infra/rabbitmq` e `infra/redis`) | idem |
 | **Worker no docker** (`docker compose up notification-worker`) | `env_file: .env` carrega raiz inteira, depois `environment:` no compose sobrescreve `RABBITMQ_URL` e `REDIS_URL` com `*_DOCKER` | `RABBITMQ_URL` → `rabbitmq:5672`, `REDIS_URL` → `redis:6379`, mais tudo da raiz |
 
-### Por que existem `*_DOCKER`?
+### Por que existem `DOCKER`?
 
 Quando o backend roda no **host** (Windows/macOS/Linux), ele acessa Redis e RabbitMQ via `localhost:6379` / `localhost:5672` (portas expostas pelo compose).
 
@@ -143,7 +143,7 @@ backend (server.ts)
 
 ## Convenções
 
-- Workspaces Bun: tudo que é compartilhado entre backend e frontend vai em `packages/shared`
+- npm workspaces: tudo que é compartilhado entre backend e frontend vai em `packages/shared`
 - Rotas finas, lógica em `services/`, acesso a dados em `repositories/`
 - Validação de input com Zod (schemas em `packages/shared`)
 - Erros centralizados em `middleware/error.ts` + classes em `backend/exceptions/`
