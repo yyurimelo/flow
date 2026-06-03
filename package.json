@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:back": "bun --cwd backend dev"
+    "dev:back": "npm -w backend run dev",
+    "dev:worker": "npm -w backend run worker"
   },
   "repository": {
     "type": "git",

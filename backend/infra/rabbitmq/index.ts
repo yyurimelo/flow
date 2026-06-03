@@ -1,3 +1,4 @@
+import "../env";
 import amqp, { type Channel, type ChannelModel } from "amqplib";
 
 export class RabbitMQClient {
@@ -6,6 +7,10 @@ export class RabbitMQClient {
 
   async connect() {
     if (this.channel) return this.channel;
+
+    if (!process.env.RABBITMQ_URL) {
+      throw new Error('RABBITMQ_URL não definida');
+    }
 
     this.connection = await amqp.connect(process.env.RABBITMQ_URL!);
     this.channel = await this.connection.createChannel();

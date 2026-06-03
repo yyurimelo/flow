@@ -7,11 +7,9 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: kalo
-      RABBITMQ_DEFAULT_PASS: kalo
-    configs:
-      - source: rabbitmq-plugins
-        target: /etc/rabbitmq/enabled_plugins
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    command: sh -c "rabbitmq-plugins enable rabbitmq_management && rabbitmq-server"
     volumes:
       - rabbitmq-lib:/var/lib/rabbitmq/
       - rabbitmq-log:/var/log/rabbitmq
@@ -25,20 +23,18 @@ services:
 
   notification-worker:
     build:
-      context: . # raiz do monorepo
+      context: .
       dockerfile: backend/workers/Dockerfile
     container_name: notification-worker
     restart: always
     depends_on:
       - rabbitmq
       - redis
+    env_file:
+      - .env
     environment:
-      RABBITMQ_URL: amqp://kalo:kalo@rabbitmq:5672
-      REDIS_URL: redis://redis:6379
-
-configs:
-  rabbitmq-plugins:
-    content: "[rabbitmq_management]."
+      RABBITMQ_URL: ${RABBITMQ_URL_DOCKER}
+      REDIS_URL: ${REDIS_URL_DOCKER}
 
 volumes:
   rabbitmq-lib:
