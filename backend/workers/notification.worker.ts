@@ -1,18 +1,11 @@
 import { rabbitMQClient } from "@flow/infra/rabbitmq";
-import { connectRedis } from "@flow/infra/redis";
-import { getIO } from "@flow/infra/socket";
+import { connectRedis, pubClient } from "@flow/infra/redis";
 
 async function start() {
   await connectRedis();
 
   console.log("[NotificationWorker] Inicializando...");
-
-  const io = getIO();
-
   const channel = await rabbitMQClient.connect();
-
-  console.log("[NotificationWorker] Conectado ao RabbitMQ");
-
   await channel?.assertQueue("notification.created");
 
   channel?.consume("notification.created", async (msg) => {
@@ -20,32 +13,20 @@ async function start() {
 
     try {
       const payload = JSON.parse(msg.content.toString());
+      console.log(`[NotificationWorker] Recebida notificação: ${payload.id}`);
 
-      console.log(
-        `[NotificationWorker] Recebida notificação: ${payload.id}`
+      await pubClient.publish(
+        "socket:notifications",
+        JSON.stringify(payload)
       );
-
-      if (payload.userId) {
-        io.to(payload.userId).emit("notification", payload);
-      } else {
-        io.emit("notification", payload);
-      }
 
       channel.ack(msg);
-
-      console.log(
-        `[NotificationWorker] Notificação ${payload.id} processada com sucesso`
-      );
+      console.log(`[NotificationWorker] Notificação ${payload.id} publicada no Redis`);
     } catch (error) {
-      console.error(
-        "[NotificationWorker] Erro ao processar notificação:",
-        error
-      );
-
+      console.error("[NotificationWorker] Erro:", error);
       channel.nack(msg, false, true);
     }
-  }
-  );
+  });
 }
 
 start();

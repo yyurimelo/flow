@@ -26,3 +26,23 @@ export function getIO(): Server {
   if (!io) throw new Error("Socket.io não inicializado");
   return io;
 }
+
+export async function setupRedisSocketForwarder() {
+  await subClient.subscribe("socket:notifications", (message) => {
+    try {
+      const payload = JSON.parse(message);
+      const io = getIO();
+
+      if (payload.userId) {
+        io.to(payload.userId).emit("notification", payload);
+      } else {
+        io.emit("notification", payload);
+      }
+
+      console.log(`[RedisForwarder] Notificação ${payload.id} emitida via Socket.IO`);
+    } catch (err) {
+      console.error("[RedisForwarder] Erro ao emitir:", err);
+    }
+  });
+}
+

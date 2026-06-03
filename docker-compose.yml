@@ -4,8 +4,8 @@ services:
     container_name: rabbitmq
     restart: always
     ports:
-      - 5672:5672
-      - 15672:15672
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: kalo
       RABBITMQ_DEFAULT_PASS: kalo
@@ -19,8 +19,22 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+    restart: always
     ports:
       - "6379:6379"
+
+  notification-worker:
+    build:
+      context: . # raiz do monorepo
+      dockerfile: backend/workers/Dockerfile
+    container_name: notification-worker
+    restart: always
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      RABBITMQ_URL: amqp://kalo:kalo@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
 
 configs:
   rabbitmq-plugins:
