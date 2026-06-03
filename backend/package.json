@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "prisma generate && tsc",
-    "start": "tsx server.ts"
+    "start": "tsx server.ts",
+    "worker": "tsx workers/notification.worker.ts"
   },
   "keywords": [],
   "author": "",

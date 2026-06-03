@@ -1,14 +1,14 @@
 import { rabbitMQClient } from "@flow/infra/rabbitmq";
-import { connectRedis, pubClient, subClient } from "@flow/infra/redis";
-import { createAdapter } from "@socket.io/redis-adapter";
-import { Server } from "socket.io";
+import { connectRedis } from "@flow/infra/redis";
+import { getIO } from "@flow/infra/socket";
 
 async function start() {
   await connectRedis();
 
   console.log("[NotificationWorker] Inicializando...");
 
-  const io = new Server({ adapter: createAdapter(pubClient, subClient) });
+  const io = getIO();
+
   const channel = await rabbitMQClient.connect();
 
   console.log("[NotificationWorker] Conectado ao RabbitMQ");
