@@ -72,17 +72,17 @@ Fonte única de verdade pra RabbitMQ, Redis e as URLs usadas em cada contexto (h
 
 ```ini
 # Credenciais do RabbitMQ (usadas pelo serviço `rabbitmq` no compose + pelos clients)
-RABBITMQ_USER="isa"
-RABBITMQ_PASS="isa"
+RABBITMQ_USER="<rabbitmq-user>"
+RABBITMQ_PASS="<rabbitmq-pass>"
 
 # URL do RabbitMQ para o backend rodando **no host** (acessa via localhost)
-RABBITMQ_URL="amqp://isa:isa@localhost:5672"
+RABBITMQ_URL="amqp://<rabbitmq-user>:<rabbitmq-pass>@localhost:5672"
 
 # URL do Redis para o backend rodando **no host**
 REDIS_URL="redis://localhost:6379"
 
 # URL do RabbitMQ para o worker rodando **dentro do docker** (hostnames internos da rede)
-RABBITMQ_URL_DOCKER="amqp://isa:isa@rabbitmq:5672"
+RABBITMQ_URL_DOCKER="amqp://<rabbitmq-user>:<rabbitmq-pass>@rabbitmq:5672"
 
 # URL do Redis para o worker rodando **dentro do docker**
 REDIS_URL_DOCKER="redis://redis:6379"

@@ -84,7 +84,7 @@ Carregadas pelo `infra/env.ts` (na ordem):
 
 **`.env` (raiz)** — vars de infra compartilhada com o compose:
 - `RABBITMQ_USER`, `RABBITMQ_PASS` — credenciais do RabbitMQ
-- `RABBITMQ_URL` — URL completa (host: `amqp://isa:isa@localhost:5672`)
+- `RABBITMQ_URL` — URL completa (host: `amqp://<rabbitmq-user>:<rabbitmq-pass>@localhost:5672`)
 - `REDIS_URL` — URL do Redis (host: `redis://localhost:6379`)
 - `RABBITMQ_URL_DOCKER`, `REDIS_URL_DOCKER` — versões pra uso dentro do compose (hostnames internos)
 
