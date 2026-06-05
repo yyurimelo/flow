@@ -266,6 +266,11 @@ export class NotificationService {
       baseFilters.destination = filters.destination;
     }
 
+    // System notifications are broadcasts — no user ownership filter applies
+    if (filters.destination === NOTIFICATION_DESTINATION.SYSTEM) {
+      return baseFilters;
+    }
+
     if (targetUserId === null) {
       if (filters.scope === NOTIFICATION_SCOPE.RECEIVED) {
         return {
