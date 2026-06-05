@@ -198,7 +198,7 @@ function NotificationDetail({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="flex items-start gap-3 pr-8">
+          <div className="flex items-center gap-3 pr-8">
             <div className="mt-0.5 size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-none">
               <DestIcon className="size-[14px]" />
             </div>

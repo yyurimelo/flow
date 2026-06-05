@@ -1,10 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { LogOut, Moon, Sun } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { LogOut, Moon, Sun, PenLine, History, LayoutTemplate, Settings2 } from 'lucide-react'
 import { USER_ROLE } from '@flow/shared'
 import { useAuth } from '@/src/providers/auth-provider'
 import { useTheme } from '@/components/ui/theme-provider'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -18,6 +17,9 @@ import {
 import { NotificationBell } from '@/src/features/notifications/components/notification-bell'
 import { NovadesBell } from '@/src/features/notifications/components/novidades-bell'
 import { NovaBanner } from '@/src/features/notifications/components/novidade-banner'
+import { CreateNotificationPage } from '@/src/features/notifications/pages/create-notification-page'
+import { useLoggedUserStore } from '@/src/stores/logged-user.store'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
@@ -29,10 +31,36 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
+type Section = 'criar' | 'historico' | 'templates' | 'configuracoes'
+
+const NAV_ITEMS: { id: Section; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: 'criar', label: 'Criar Notificação', icon: PenLine },
+  { id: 'historico', label: 'Histórico', icon: History },
+  { id: 'templates', label: 'Templates', icon: LayoutTemplate },
+  { id: 'configuracoes', label: 'Configurações', icon: Settings2 },
+]
+
+function SectionContent({ section }: { section: Section }) {
+  if (section === 'criar') return <CreateNotificationPage />
+  const labels: Record<Section, string> = {
+    criar: '',
+    historico: 'Histórico de Notificações',
+    templates: 'Templates',
+    configuracoes: 'Configurações',
+  }
+  return (
+    <p className="text-sm font-light text-muted-foreground/50 py-16 text-center">
+      {labels[section]} — em breve
+    </p>
+  )
+}
+
 function DashboardPage() {
   const { user, isLoading, logout } = useAuth()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
+  const setLoggedUser = useLoggedUserStore((s) => s.setLoggedUser)
+  const [section, setSection] = useState<Section>('criar')
 
 
   useEffect(() => {
@@ -41,12 +69,26 @@ function DashboardPage() {
     }
   }, [user, isLoading, navigate])
 
+  useEffect(() => {
+    if (user) {
+      setLoggedUser({
+        id: user.id,
+        name: user.name ?? '',
+        email: user.email,
+        role: user.role,
+        permissions: user.role === USER_ROLE.ADMIN ? ['send:system', 'send:user'] : ['send:user'],
+      })
+    } else {
+      setLoggedUser(null)
+    }
+  }, [user, setLoggedUser])
+
   if (!user) return null
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/60">
-        <div className="mx-auto max-w-5xl flex items-center justify-between px-6 py-3">
+        <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-3">
           <span
             className="font-display italic text-primary leading-none select-none"
             style={{ fontSize: '1.75rem', letterSpacing: '-0.01em' }}
@@ -55,7 +97,7 @@ function DashboardPage() {
           </span>
 
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
               <a
                 href="https://github.com/yyurimelo/flow"
                 target="_blank"
@@ -113,11 +155,11 @@ function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-12">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10">
         <NovaBanner />
 
-        <div className="my-10">
-          <h1 className="text-2xl font-semibold tracking-tight">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
             Olá, {user.name ?? 'usuário'}
           </h1>
           <p className="mt-1 text-sm font-light text-muted-foreground">
@@ -125,21 +167,30 @@ function DashboardPage() {
           </p>
         </div>
 
-        <div className="max-w-xs space-y-5">
-          <p className="text-xs font-light text-muted-foreground/60">Sua conta</p>
-
-          <div className="space-y-4">
-            <Row label="Nome" value={user.name ?? '—'} />
-            <Row label="Email" value={user.email} />
-            <div className="flex items-baseline justify-between gap-4">
-              <span className="text-xs font-light text-muted-foreground">Perfil</span>
-              <Badge
-                variant={user.role === USER_ROLE.ADMIN ? 'default' : 'secondary'}
-                className="text-[11px] font-normal"
-              >
-                {user.role === USER_ROLE.ADMIN ? 'Admin' : 'Usuário'}
-              </Badge>
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
+          <nav className="lg:w-52 lg:shrink-0">
+            <div className="border border-border/60 rounded-lg p-1.5 sm:p-2 flex flex-row lg:flex-col gap-0.5 overflow-x-auto lg:overflow-x-visible">
+              {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setSection(id)}
+                  className={cn(
+                    'flex items-center gap-2 shrink-0 lg:shrink px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-md sm:rounded-lg text-sm transition-colors text-left',
+                    'lg:w-full',
+                    section === id
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground font-light',
+                  )}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  <span className="whitespace-nowrap">{label}</span>
+                </button>
+              ))}
             </div>
+          </nav>
+
+          <div className="flex-1 min-w-0 border border-border/60 rounded-lg p-4 sm:p-6">
+            <SectionContent section={section} />
           </div>
         </div>
       </main>
@@ -147,11 +198,3 @@ function DashboardPage() {
   )
 }
 
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4">
-      <span className="text-xs font-light text-muted-foreground shrink-0">{label}</span>
-      <span className="text-sm font-normal text-foreground truncate text-right">{value}</span>
-    </div>
-  )
-}

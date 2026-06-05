@@ -132,3 +132,119 @@
     @apply font-sans;
   }
 }
+
+/* TipTap editor */
+.tiptap-editor .ProseMirror {
+  outline: none;
+  min-height: inherit;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground);
+  opacity: 0.4;
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap-editor .ProseMirror > * + * {
+  margin-top: 0.65em;
+}
+
+.tiptap-editor .ProseMirror h1 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.tiptap-editor .ProseMirror h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--foreground);
+}
+
+.tiptap-editor .ProseMirror h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+
+.tiptap-editor .ProseMirror ul,
+.tiptap-editor .ProseMirror ol {
+  padding-left: 1.4em;
+}
+
+.tiptap-editor .ProseMirror ul {
+  list-style-type: disc;
+}
+
+.tiptap-editor .ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.tiptap-editor .ProseMirror li + li {
+  margin-top: 0.2em;
+}
+
+.tiptap-editor .ProseMirror blockquote {
+  border-left: 2px solid var(--primary);
+  padding-left: 1em;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.tiptap-editor .ProseMirror code {
+  background: var(--muted);
+  color: var(--foreground);
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+  font-size: 0.875em;
+  font-family: ui-monospace, monospace;
+}
+
+.tiptap-editor .ProseMirror pre.tiptap-code-block {
+  background: var(--muted);
+  border-radius: var(--radius-md);
+  padding: 0.85em 1em;
+  overflow-x: auto;
+}
+
+.tiptap-editor .ProseMirror pre.tiptap-code-block code {
+  background: none;
+  padding: 0;
+  font-size: 0.8125em;
+  line-height: 1.6;
+}
+
+.tiptap-editor .ProseMirror a.tiptap-link {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in oklch, var(--primary) 40%, transparent);
+}
+
+.tiptap-editor .ProseMirror a.tiptap-link:hover {
+  text-decoration-color: var(--primary);
+}
+
+.tiptap-editor .ProseMirror strong {
+  font-weight: 600;
+}
+
+.tiptap-editor .ProseMirror em {
+  font-style: italic;
+}
+
+.tiptap-editor .ProseMirror u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tiptap-editor .ProseMirror s {
+  text-decoration: line-through;
+}

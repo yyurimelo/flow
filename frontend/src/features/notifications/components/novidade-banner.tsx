@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Sparkles, X } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,9 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { type Notification, type PaginatedNotificationsResponse } from '@flow/shared'
+import { NOTIFICATION_DESTINATION, type Notification } from '@flow/shared'
 import { sanitizeHtml, stripHtml } from '@/src/lib/sanitize'
 import { novadesKeys } from './novidades-bell'
+import { fetchNotifications } from '../api'
 
 function NovaBannerDetail({
   notification,
@@ -65,14 +66,18 @@ function NovaBannerDetail({
 }
 
 export function NovaBanner() {
-  const queryClient = useQueryClient()
   const [dismissed, setDismissed] = useState(false)
   const [visible, setVisible] = useState(true)
   const [detailOpen, setDetailOpen] = useState(false)
 
-  // Reads from NovadesBell cache — no extra network call
-  const cached = queryClient.getQueryData<PaginatedNotificationsResponse>(novadesKeys.list())
-  const notification = cached?.data[0] ?? null
+  const { data } = useQuery({
+    queryKey: novadesKeys.list(),
+    queryFn: () =>
+      fetchNotifications({ page: 1, limit: 20, destination: NOTIFICATION_DESTINATION.SYSTEM }),
+    staleTime: 60_000,
+  })
+
+  const notification = data?.data[0] ?? null
 
   if (!notification || !visible) return null
 
@@ -85,7 +90,7 @@ export function NovaBanner() {
     <>
       <div
         className={cn(
-          'relative rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-4 transition-all duration-300',
+          'relative rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-4 transition-all duration-300 mb-8',
           dismissed && 'opacity-0 -translate-y-1',
         )}
       >
