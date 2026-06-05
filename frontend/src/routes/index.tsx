@@ -1,13 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useAuth } from '@/src/providers/auth-provider'
 
 export const Route = createFileRoute('/')({
-  component: HomePage,
+  component: IndexRedirect,
 })
 
-function HomePage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground text-sm">Flow</p>
-    </div>
-  )
+function IndexRedirect() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    navigate({ to: user ? '/dashboard' : '/auth/login', replace: true })
+  }, [user, navigate])
+
+  return null
 }

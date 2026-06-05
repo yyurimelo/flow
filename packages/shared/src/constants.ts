@@ -1,11 +1,15 @@
 export const API_ENDPOINTS = {
+  AUTH: {
+    SIGN_IN: "/api/auth",
+    ME: "/api/auth/me",
+  },
   USER: {
-    CREATE: "/api/user",
-    UPDATE: (id: string) => `/api/user/${id}`,
-    LIST: "/api/user",
-    LIST_PAGINATED: "/api/user/paginated",
-    GET: (id: string) => `/api/user/${id}`,
-    DELETE: (id: string) => `/api/user/${id}`,
+    CREATE: "/api/users",
+    UPDATE: (id: string) => `/api/users/${id}`,
+    LIST: "/api/users",
+    LIST_PAGINATED: "/api/users/paginated",
+    GET: (id: string) => `/api/users/${id}`,
+    DELETE: (id: string) => `/api/users/${id}`,
   },
   NOTIFICATION: {
     CREATE: "/api/notifications",

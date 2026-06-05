@@ -47,12 +47,12 @@ export const createNotificationSchema = z
     destination: notificationDestinationSchema.default(
       NOTIFICATION_DESTINATION.USER
     ),
-    title: z.string().trim().min(1, "Title is required").max(120).optional(),
+    title: z.string().trim().min(1, "Título é obrigatório").max(120).optional(),
     content: z
       .string()
       .trim()
-      .min(1, "Content is required")
-      .max(1000, "Content must be at most 1000 characters"),
+      .min(1, "Conteúdo é obrigatório")
+      .max(1000, "O conteúdo deve ter no máximo 1000 caracteres"),
     type: notificationTypeSchema.default(NOTIFICATION_TYPE.INFO),
   })
   .strict()
@@ -64,7 +64,7 @@ export const createNotificationSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["receiverId"],
-        message: "receiverId is required when destination is USER",
+        message: "receiverId é obrigatório quando o destino é USER",
       });
     }
 
@@ -76,7 +76,7 @@ export const createNotificationSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["receiverId"],
-        message: "receiverId must be null when destination is SYSTEM",
+        message: "receiverId deve ser nulo quando o destino é SYSTEM",
       });
     }
   });

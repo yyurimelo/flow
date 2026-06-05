@@ -15,9 +15,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
+    if (
+      axios.isAxiosError(error) &&
+      error.response?.status === 401 &&
+      !error.config?.url?.startsWith('/api/auth')
+    ) {
       localStorage.removeItem('flow:token')
-      window.location.href = '/login'
+      window.location.href = '/auth/login'
     }
     return Promise.reject(error)
   },

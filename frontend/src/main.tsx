@@ -3,8 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { QueryProvider } from './providers/query-provider'
-import './styles/globals.css'
+import { AuthProvider } from './providers/auth-provider'
 import { routeTree } from './routeTree.gen'
+import './styles/globals.css'
 
 const router = createRouter({ routeTree })
 
@@ -18,7 +19,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="dark" storageKey="flow-ui-theme">
       <QueryProvider>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </QueryProvider>
     </ThemeProvider>
   </StrictMode>,

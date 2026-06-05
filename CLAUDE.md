@@ -59,6 +59,7 @@ docker compose up -d --build notification-worker
 **`backend/.env`** — app secrets:
 - `DATABASE_URL` — MongoDB connection string
 - `JWT_SECRET` — JWT signing key
+- `CORS_ORIGIN` — allowed origin (default: `http://localhost:5173`)
 
 `backend/infra/env.ts` loads both files (root first, then `backend/.env`) in non-production environments.
 

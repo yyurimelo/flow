@@ -168,6 +168,32 @@ export function UserCard({ user, onDelete }: UserCardProps) {
 - Responsive: mobile-first (`sm:`, `md:`, `lg:`).
 - Use `useIsMobile()` from `@/hooks/use-mobile` for JS-based responsive logic.
 
+### Typography
+
+Two font families:
+
+| Token | Family | Use |
+|---|---|---|
+| `font-sans` (default) | Inter Variable | All UI text, labels, body, buttons |
+| `font-display` | Newsreader (italic) | Brand logotype "Flow" only |
+
+**Inter weight scale** — use contrast between weights to create hierarchy, never flat:
+
+| Class | Weight | Use |
+|---|---|---|
+| `font-extralight` | 200 | Metadata labels, section eyebrows, low-hierarchy hints |
+| `font-light` | 300 | Secondary body, form labels, subtitles, footer links |
+| `font-normal` | 400 | Primary body text, input values, nav items |
+| `font-medium` | 500 | Button text, active states, important labels |
+| `font-semibold` | 600 | Page headings, card titles |
+| `font-bold` | 700 | Hero copy only |
+
+**Rules:**
+- "Flow" brand name: always `font-display italic text-primary` — never any other style.
+- Form labels: `font-light` (already set as default in `components/ui/form.tsx`).
+- Muted secondary text: `font-light text-muted-foreground`.
+- Never use uniform weights across a full page — vary for rhythm.
+
 ### Dark/light theme
 
 Theme is controlled by `ThemeProvider` in `main.tsx`. Access with:

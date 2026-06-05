@@ -2,9 +2,9 @@ import { z } from "zod";
 import { USER_ROLE } from "./types.ts";
 
 export const createUserSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  name: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().email("Formato de email inválido"),
+  password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
 });
 
 export const updateUserSchema = z
@@ -15,12 +15,12 @@ export const updateUserSchema = z
   .partial()
   .strict()
   .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field is required",
+    message: "Pelo menos um campo é obrigatório",
   });
 
 export const userIdSchema = z
   .string()
-  .regex(/^[a-f\d]{24}$/i, "Invalid user id format");
+  .regex(/^[a-f\d]{24}$/i, "Formato de ID inválido");
 
 export const getUsersPaginatedSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
