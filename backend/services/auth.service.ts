@@ -1,5 +1,5 @@
 import type { User } from "@prisma/client";
-import { authSchema, type AuthRequest, type AuthResponse } from "@flow/shared";
+import { authSchema, type AuthRequest, type AuthResponse, type UserResponse } from "@flow/shared";
 import { AuthException, UserException } from "@flow/exceptions";
 import { UserRepository } from "@flow/repositories/user.repository";
 import { TokenService } from "@flow/services/token.service";
@@ -42,7 +42,24 @@ export class AuthService {
     return this.toAuthResponse(existingUser, token);
   }
 
+  async getMe(userId: string): Promise<UserResponse> {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw AuthException.Unauthorized();
+    }
+
+    return this.toUserResponse(user);
+  }
+
   private toAuthResponse(user: User, token: string): AuthResponse {
+    return {
+      ...this.toUserResponse(user),
+      accessToken: token,
+    };
+  }
+
+  private toUserResponse(user: User): UserResponse {
     return {
       id: user.id,
       name: user.name,
@@ -51,7 +68,6 @@ export class AuthService {
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt?.toISOString() ?? null,
       createdBy: user.createdBy,
-      accessToken: token,
     };
   }
 }

@@ -1,4 +1,5 @@
 import express from "express"
+import cors from "cors"
 import { createServer } from "http"
 import { connectRedis } from "./infra/redis"
 import { initSocket, setupRedisSocketForwarder } from "./infra/socket"
@@ -8,6 +9,10 @@ import notifications from "./routes/notifications"
 import user from "./routes/users"
 
 const app = express()
+app.use(cors({
+  origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+  credentials: true,
+}))
 app.use(express.json())
 
 app.use("/api/users", user)
