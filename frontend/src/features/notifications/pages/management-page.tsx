@@ -353,7 +353,7 @@ export function ManagementPage() {
           <h2 className="text-base font-semibold text-foreground">Gerenciamento</h2>
           <p className="text-sm font-light text-muted-foreground mt-0.5">
             {total !== undefined
-              ? `${total} notificação${total !== 1 ? 'ões' : ''} enviada${total !== 1 ? 's' : ''}`
+              ? `${total} ${total !== 1 ? 'notificações' : 'notificação'} ${total !== 1 ? 'enviadas' : 'enviada'}`
               : 'Carregando...'}
           </p>
         </div>

@@ -373,7 +373,7 @@ export function HistoricoPage() {
         <div>
           <h2 className="text-base font-semibold text-foreground">Histórico</h2>
           <p className="text-sm font-light text-muted-foreground mt-0.5">
-            {total !== undefined ? `${total} notificação${total !== 1 ? 'ões' : ''}` : 'Carregando...'}
+            {total !== undefined ? `${total} ${total !== 1 ? 'notificações' : 'notificação'}` : 'Carregando...'}
           </p>
         </div>
 
