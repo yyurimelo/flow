@@ -1,9 +1,3 @@
-import { useState } from 'react'
-import { Sparkles, X } from 'lucide-react'
-import { formatDistanceToNow, format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { useQuery } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,10 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
+import { sanitizeHtml } from '@/src/lib/sanitize'
 import { NOTIFICATION_DESTINATION, type Notification } from '@flow/shared'
-import { sanitizeHtml, stripHtml } from '@/src/lib/sanitize'
-import { novadesKeys } from './novidades-bell'
+import { useQuery } from '@tanstack/react-query'
+import { format, formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { Sparkles, X } from 'lucide-react'
+import { useState } from 'react'
 import { fetchNotifications } from '../api'
+import { novadesKeys } from './novidades-bell'
 
 function NovaBannerDetail({
   notification,
@@ -41,7 +41,7 @@ function NovaBannerDetail({
 
         {notification.title && (
           <div
-            className="text-sm font-light leading-relaxed text-foreground/80 prose prose-sm prose-invert max-w-none"
+            className="notification-content text-sm text-foreground/90 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(notification.content) }}
           />
         )}
@@ -107,9 +107,10 @@ export function NovaBanner() {
               {notification.title ?? notification.content}
             </p>
             {notification.title && (
-              <p className="mt-1 text-xs font-light text-muted-foreground/70 leading-relaxed line-clamp-2">
-                {stripHtml(notification.content)}
-              </p>
+              <div
+                className="notification-content mt-1.5 text-sm text-foreground/85 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(notification.content) }}
+              />
             )}
             <div className="flex items-center gap-3 mt-2.5">
               <span className="text-[11px] font-light text-muted-foreground/50">

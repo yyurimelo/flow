@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
+import type { FileRoutesByTo } from '@/src/routeTree.gen'
 import { useEffect } from 'react'
-import { PenLine, History, LayoutTemplate, Settings2 } from 'lucide-react'
+import { PenLine, History, Cog } from 'lucide-react'
 import { USER_ROLE } from '@flow/shared'
 import { useAuth } from '@/src/providers/auth-provider'
 import { useLoggedUserStore } from '@/src/stores/logged-user.store'
@@ -16,8 +17,10 @@ export const Route = createFileRoute('/notifications')({
   component: NotificationsLayout,
 })
 
+type AppRoutePath = keyof FileRoutesByTo
+
 interface NavLinkProps {
-  to: string
+  to: AppRoutePath
   icon: React.ComponentType<{ className?: string }>
   children: React.ReactNode
 }
@@ -61,10 +64,10 @@ function NotificationsLayout() {
   }, [user, setLoggedUser])
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 lg:p-6 min-h-screen">
-      <div className="w-full max-w-5xl space-y-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <nav className="flex flex-row lg:flex-col lg:w-52 lg:shrink-0 overflow-x-auto lg:overflow-x-visible">
+    <div className="min-h-screen px-4 py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+          <nav className="flex flex-row lg:flex-col lg:w-56 lg:shrink-0 overflow-x-auto lg:overflow-x-visible">
             <div className="border border-border/60 rounded-lg p-2 space-y-0.5 w-full">
               <NavLink to="/notifications/criar" icon={PenLine}>
                 Criar Notificação
@@ -72,16 +75,13 @@ function NotificationsLayout() {
               <NavLink to="/notifications/historico" icon={History}>
                 Histórico
               </NavLink>
-              <NavLink to="/notifications/templates" icon={LayoutTemplate}>
-                Templates
-              </NavLink>
-              <NavLink to="/notifications/configuracoes" icon={Settings2}>
-                Configurações
+              <NavLink to="/notifications/gerenciamento" icon={Cog}>
+                Gerenciamento
               </NavLink>
             </div>
           </nav>
 
-          <main className="flex-1 min-w-0 border border-border/60 rounded-lg p-6">
+          <main className="flex-1 min-w-0 border border-border/60 rounded-lg p-6 lg:p-8">
             <Outlet />
           </main>
         </div>

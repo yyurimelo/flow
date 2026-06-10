@@ -211,7 +211,7 @@ function NotificationDetail({
         {/* Full message */}
         {notification.title && (
           <div
-            className="text-sm font-light leading-relaxed text-foreground/80 prose prose-sm prose-invert max-w-none"
+            className="notification-content text-sm text-foreground/90 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(notification.content) }}
           />
         )}

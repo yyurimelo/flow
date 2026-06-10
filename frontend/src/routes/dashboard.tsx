@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import { LogOut, Moon, Sun, PenLine, History, LayoutTemplate, Settings2 } from 'lucide-react'
+import { createFileRoute, Link, Outlet, redirect, useNavigate } from '@tanstack/react-router'
+import type { FileRoutesByTo } from '@/src/routeTree.gen'
+import { useEffect } from 'react'
+import { LogOut, Moon, Sun, PenLine, History, Cog } from 'lucide-react'
 import { USER_ROLE } from '@flow/shared'
 import { useAuth } from '@/src/providers/auth-provider'
 import { useTheme } from '@/components/ui/theme-provider'
@@ -17,13 +18,26 @@ import {
 import { NotificationBell } from '@/src/features/notifications/components/notification-bell'
 import { NovadesBell } from '@/src/features/notifications/components/novidades-bell'
 import { NovaBanner } from '@/src/features/notifications/components/novidade-banner'
-import { CreateNotificationPage } from '@/src/features/notifications/pages/create-notification-page'
 import { useLoggedUserStore } from '@/src/stores/logged-user.store'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/dashboard')({
-  component: DashboardPage,
+  beforeLoad: ({ context }) => {
+    // @ts-expect-error context type
+    if (context?.auth && !context.auth.isAuthenticated) {
+      throw redirect({ to: '/auth/login' })
+    }
+  },
+  component: DashboardLayout,
 })
+
+type AppRoutePath = keyof FileRoutesByTo
+
+const NAV_ITEMS: { to: AppRoutePath; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { to: '/dashboard/criar', label: 'Criar Notificação', icon: PenLine },
+  { to: '/dashboard/historico', label: 'Histórico', icon: History },
+  { to: '/dashboard/gerenciamento', label: 'Gerenciamento', icon: Cog },
+]
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/)
@@ -31,37 +45,11 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-type Section = 'criar' | 'historico' | 'templates' | 'configuracoes'
-
-const NAV_ITEMS: { id: Section; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'criar', label: 'Criar Notificação', icon: PenLine },
-  { id: 'historico', label: 'Histórico', icon: History },
-  { id: 'templates', label: 'Templates', icon: LayoutTemplate },
-  { id: 'configuracoes', label: 'Configurações', icon: Settings2 },
-]
-
-function SectionContent({ section }: { section: Section }) {
-  if (section === 'criar') return <CreateNotificationPage />
-  const labels: Record<Section, string> = {
-    criar: '',
-    historico: 'Histórico de Notificações',
-    templates: 'Templates',
-    configuracoes: 'Configurações',
-  }
-  return (
-    <p className="text-sm font-light text-muted-foreground/50 py-16 text-center">
-      {labels[section]} — em breve
-    </p>
-  )
-}
-
-function DashboardPage() {
+function DashboardLayout() {
   const { user, isLoading, logout } = useAuth()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const setLoggedUser = useLoggedUserStore((s) => s.setLoggedUser)
-  const [section, setSection] = useState<Section>('criar')
-
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -83,7 +71,7 @@ function DashboardPage() {
     }
   }, [user, setLoggedUser])
 
-  if (!user) return null
+  if (isLoading || !user) return null
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,31 +158,30 @@ function DashboardPage() {
         <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           <nav className="lg:w-52 lg:shrink-0">
             <div className="border border-border/60 rounded-lg p-1.5 sm:p-2 flex flex-row lg:flex-col gap-0.5 overflow-x-auto lg:overflow-x-visible">
-              {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setSection(id)}
+              {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
                   className={cn(
-                    'flex items-center gap-2 shrink-0 lg:shrink px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-md sm:rounded-lg text-sm transition-colors text-left',
-                    'lg:w-full',
-                    section === id
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground font-light',
+                    'flex items-center gap-2 shrink-0 lg:shrink px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-md sm:rounded-lg text-sm transition-colors text-left lg:w-full',
+                    'text-muted-foreground hover:bg-accent hover:text-foreground font-light',
                   )}
+                  activeProps={{
+                    className: 'bg-primary/10 text-primary font-medium hover:bg-primary/10 hover:text-primary',
+                  }}
                 >
                   <Icon className="size-4 shrink-0" />
                   <span className="whitespace-nowrap">{label}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </nav>
 
           <div className="flex-1 min-w-0 border border-border/60 rounded-lg p-4 sm:p-6">
-            <SectionContent section={section} />
+            <Outlet />
           </div>
         </div>
       </main>
     </div>
   )
 }
-

@@ -3,6 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
+import { Extension } from '@tiptap/core'
 import {
   Bold,
   Italic,
@@ -75,6 +76,14 @@ export function RichTextEditor({
     extensions: [
       StarterKit.configure({
         codeBlock: { HTMLAttributes: { class: 'tiptap-code-block' } },
+      }),
+      Extension.create({
+        name: 'enterAsHardBreak',
+        addKeyboardShortcuts() {
+          return {
+            Enter: () => this.editor.commands.setHardBreak(),
+          }
+        },
       }),
       Underline,
       Link.configure({

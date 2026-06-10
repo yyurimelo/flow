@@ -6,10 +6,38 @@ import { Select as SelectPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
+type SelectContextType = {
+  value?: string
+  onDeselect?: () => void
+}
+
+const SelectContext = React.createContext<SelectContextType>({})
+
 function Select({
+  deselectable = false,
+  value,
+  onValueChange,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
+}: React.ComponentProps<typeof SelectPrimitive.Root> & {
+  deselectable?: boolean
+}) {
+  const handleDeselect = () => onValueChange?.('')
+
+  return (
+    <SelectContext.Provider
+      value={{
+        value,
+        onDeselect: deselectable ? handleDeselect : undefined,
+      }}
+    >
+      <SelectPrimitive.Root
+        data-slot="select"
+        value={value}
+        onValueChange={onValueChange}
+        {...props}
+      />
+    </SelectContext.Provider>
+  )
 }
 
 function SelectGroup({
@@ -106,15 +134,29 @@ function SelectLabel({
 function SelectItem({
   className,
   children,
+  value,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Item>) {
+  const { value: currentValue, onDeselect } = React.useContext(SelectContext)
+  const isSelected = currentValue === value
+
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
+      value={value}
       className={cn(
         "relative flex w-full cursor-default items-center gap-2.5 rounded-2xl py-2 pr-8 pl-3 text-sm font-medium outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
+      onPointerUp={(e) => {
+        if (onDeselect && isSelected) {
+          e.preventDefault()
+          onDeselect()
+          requestAnimationFrame(() => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+          })
+        }
+      }}
       {...props}
     >
       <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center">
