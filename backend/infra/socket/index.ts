@@ -33,10 +33,10 @@ export async function setupRedisSocketForwarder() {
       const payload = JSON.parse(message);
       const io = getIO();
 
-      if (payload.userId) {
-        io.to(payload.userId).emit("notification", payload);
-      } else {
+      if (payload.destination === "SYSTEM" || !payload.receiverId) {
         io.emit("notification", payload);
+      } else {
+        io.to(payload.receiverId).emit("notification", payload);
       }
 
       console.log(`[RedisForwarder] Notificação ${payload.id} emitida via Socket.IO`);

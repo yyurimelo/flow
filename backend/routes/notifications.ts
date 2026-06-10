@@ -18,6 +18,40 @@ router.post("/", authMiddleware, async (req, res, next) => {
   }
 });
 
+router.post("/manage/paginated", authMiddleware, async (req, res, next) => {
+  try {
+    const response = await notificationService.getManagementPaginated(
+      req.query,
+      req.body,
+      (req as any).userId
+    );
+
+    return res.status(200).json(response);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.patch<{ id: string }>("/:id/active", authMiddleware, async (req, res, next) => {
+  try {
+    const { active } = req.body;
+
+    if (typeof active !== "boolean") {
+      return res.status(400).json({ message: "active must be a boolean" });
+    }
+
+    const response = await notificationService.setActive(
+      req.params.id,
+      (req as any).userId,
+      active
+    );
+
+    return res.status(200).json(response);
+  } catch (err) {
+    return next(err);
+  }
+});
+
 router.post("/paginated", authMiddleware, async (req, res, next) => {
   try {
     const response = await notificationService.getAllPaginated(

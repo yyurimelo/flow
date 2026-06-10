@@ -42,6 +42,13 @@ export class NotificationRepository {
     });
   }
 
+  setActive(id: string, active: boolean) {
+    return prisma.notification.update({
+      where: { id },
+      data: { active },
+    });
+  }
+
   delete(id: string) {
     return prisma.notification.delete({
       where: { id },

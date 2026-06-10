@@ -14,6 +14,8 @@ import {
   type CreateNotificationRequest,
   type GetNotificationFiltersRequest,
   type GetNotificationsRequest,
+  type NotificationDestination,
+  type NotificationType,
   type NotificationResponse,
   type PaginatedNotificationsResponse,
   type UpdateNotificationReadStatusRequest,
@@ -119,7 +121,7 @@ export class NotificationService {
     const { userId, read, type, destination, scope } = filtersResult.data;
     const skip = (page - 1) * limit;
     const targetUserId =
-      requester.role === "ADMIN" ? (userId ?? null) : validatedRequesterId;
+      requester.role === "ADMIN" ? (userId ?? validatedRequesterId) : validatedRequesterId;
 
     if (
       requester.role !== "ADMIN" &&
@@ -158,7 +160,10 @@ export class NotificationService {
       listFilters.destination = destination;
     }
 
-    const where = this.buildListWhere(targetUserId, listFilters);
+    const where: Prisma.NotificationWhereInput = {
+      ...(this.buildListWhere(targetUserId, listFilters) as object),
+      active: { not: false },
+    } as Prisma.NotificationWhereInput;
     const unreadWhere = this.buildUnreadWhere(targetUserId);
 
     const [total, unreadCount, notifications] = await Promise.all([
@@ -230,6 +235,86 @@ export class NotificationService {
     return this.toNotificationResponse(updatedNotification);
   }
 
+  async getManagementPaginated(
+    params: GetNotificationsRequest,
+    filters: {
+      active?: boolean;
+      destination?: NotificationDestination;
+      type?: NotificationType;
+    },
+    requesterId: string
+  ): Promise<PaginatedNotificationsResponse> {
+    const validatedRequesterId = this.validateUserId(requesterId);
+    const requester = await this.getRequester(validatedRequesterId);
+
+    const paramsResult = getNotificationsSchema.safeParse(params);
+
+    if (!paramsResult.success) {
+      throw NotificationException.ValidationError(paramsResult.error.issues);
+    }
+
+    const { page, limit } = paramsResult.data;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.NotificationWhereInput = {};
+
+    if (requester.role !== "ADMIN") {
+      where.senderId = validatedRequesterId;
+    }
+
+    // TODO: remove cast after `npm -w backend exec prisma generate`
+    const whereAny = where as any;
+    if (filters.active !== undefined) {
+      whereAny.active = filters.active;
+    }
+
+    if (filters.destination !== undefined) {
+      where.destination = filters.destination;
+    }
+
+    if (filters.type !== undefined) {
+      where.type = filters.type;
+    }
+
+    const [total, notifications] = await Promise.all([
+      this.notificationRepository.count(where),
+      this.notificationRepository.findManyPaginated(where, skip, limit),
+    ]);
+
+    return {
+      data: await this.toNotificationResponses(notifications),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        unreadCount: 0,
+      },
+    };
+  }
+
+  async setActive(id: string, requesterId: string, active: boolean): Promise<NotificationResponse> {
+    const validatedId = this.validateNotificationId(id);
+    const validatedRequesterId = this.validateUserId(requesterId);
+    const requester = await this.getRequester(validatedRequesterId);
+    const notification = await this.notificationRepository.findById(validatedId);
+
+    if (!notification) {
+      throw NotificationException.NotificationNotFound();
+    }
+
+    const canManage =
+      requester.role === "ADMIN" || notification.senderId === validatedRequesterId;
+
+    if (!canManage) {
+      throw AuthException.Forbidden();
+    }
+
+    const updated = await this.notificationRepository.setActive(validatedId, active);
+
+    return this.toNotificationResponse(updated);
+  }
+
   async delete(id: string, requesterId: string): Promise<void> {
     const validatedId = this.validateNotificationId(id);
     const validatedRequesterId = this.validateUserId(requesterId);
@@ -289,13 +374,6 @@ export class NotificationService {
       return baseFilters;
     }
 
-    if (filters.scope === NOTIFICATION_SCOPE.RECEIVED) {
-      return {
-        ...baseFilters,
-        receiverId: targetUserId,
-      };
-    }
-
     if (filters.scope === NOTIFICATION_SCOPE.SENT) {
       return {
         ...baseFilters,
@@ -303,10 +381,14 @@ export class NotificationService {
       };
     }
 
+    // RECEIVED and ALL: USER notifications addressed to me OR SYSTEM broadcasts
     return {
       ...baseFilters,
-      OR: [{ receiverId: targetUserId }, { senderId: targetUserId }],
-    };
+      OR: [
+        { receiverId: targetUserId },
+        { destination: NOTIFICATION_DESTINATION.SYSTEM },
+      ],
+    } as Prisma.NotificationWhereInput;
   }
 
   private buildUnreadWhere(targetUserId: string | null): Prisma.NotificationWhereInput {
@@ -319,8 +401,11 @@ export class NotificationService {
 
     return {
       read: false,
-      receiverId: targetUserId,
-    };
+      OR: [
+        { receiverId: targetUserId },
+        { destination: NOTIFICATION_DESTINATION.SYSTEM },
+      ],
+    } as Prisma.NotificationWhereInput;
   }
 
   private async getRequester(requesterId: string) {
@@ -445,6 +530,7 @@ export class NotificationService {
       type: notification.type,
       read: notification.read,
       readAt: notification.readAt?.toISOString() ?? null,
+      active: notification.active !== false,
       createdAt: notification.createdAt.toISOString(),
       updatedAt: notification.updatedAt?.toISOString() ?? null,
     };

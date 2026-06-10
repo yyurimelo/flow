@@ -41,6 +41,7 @@ model Notification {
   type        NotificationType        @default(INFO)
   read        Boolean                 @default(false)
   readAt      DateTime?
+  active      Boolean?                @default(true)
   createdAt   DateTime                @default(now())
   updatedAt   DateTime?               @updatedAt
 
