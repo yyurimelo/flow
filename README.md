@@ -10,7 +10,7 @@ Plataforma de notificações em tempo real. Monorepo com **backend** (Express + 
 | API | Express 5 |
 | Realtime | Socket.IO + Redis adapter |
 | Mensageria | RabbitMQ |
-| Cache/PubSub | Redis |
+| PubSub | Redis |
 | Banco | MongoDB via Prisma |
 | Validação | Zod (`@flow/shared`) |
 | Frontend | React 19 + Vite 6 + TypeScript |
