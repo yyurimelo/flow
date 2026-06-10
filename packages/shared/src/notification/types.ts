@@ -37,6 +37,7 @@ export type Notification = {
   type: NotificationType;
   read: boolean;
   readAt: string | null;
+  active: boolean;
   createdAt: string;
   updatedAt: string | null;
 };

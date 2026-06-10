@@ -14,8 +14,10 @@ export const API_ENDPOINTS = {
   NOTIFICATION: {
     CREATE: "/api/notifications",
     LIST_PAGINATED: "/api/notifications/paginated",
+    MANAGE_PAGINATED: "/api/notifications/manage/paginated",
     GET: (id: string) => `/api/notifications/${id}`,
     UPDATE_READ_STATUS: (id: string) => `/api/notifications/${id}/read-status`,
+    SET_ACTIVE: (id: string) => `/api/notifications/${id}/active`,
     DELETE: (id: string) => `/api/notifications/${id}`,
   },
 } as const;
