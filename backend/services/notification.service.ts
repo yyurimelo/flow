@@ -258,7 +258,9 @@ export class NotificationService {
 
     const where: Prisma.NotificationWhereInput = {};
 
-    if (requester.role !== "ADMIN") {
+    if (requester.role === "ADMIN") {
+      (where as any).NOT = { receiverId: validatedRequesterId };
+    } else {
       where.senderId = validatedRequesterId;
     }
 
